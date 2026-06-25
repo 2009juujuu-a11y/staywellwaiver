@@ -218,25 +218,15 @@ window.addEventListener('load',()=>{
 });
 
 function sendToSheet(payload){
-  return new Promise((resolve)=>{
-    const form=document.createElement('form');
-    form.method='POST';
-    form.action=SHEET_URL;
-    form.target='hidden-iframe';
-    form.style.display='none';
-    const inp=document.createElement('input');
-    inp.type='hidden';
-    inp.name='data';
-    inp.value=JSON.stringify(payload);
-    form.appendChild(inp);
-    document.body.appendChild(form);
-    const iframe=document.createElement('iframe');
-    iframe.name='hidden-iframe';
-    iframe.style.display='none';
-    document.body.appendChild(iframe);
-    iframe.onload=()=>{resolve(true);};
-    setTimeout(()=>resolve(true),5000);
-    form.submit();
+  return new Promise((resolve,reject)=>{
+    const url=SHEET_URL+'?data='+encodeURIComponent(JSON.stringify(payload));
+    const img=new Image();
+    img.onload=()=>resolve(true);
+    img.onerror=()=>resolve(true);
+    setTimeout(()=>resolve(true),6000);
+    fetch(url,{method:'GET',mode:'no-cors'})
+      .then(()=>resolve(true))
+      .catch(()=>resolve(true));
   });
 }
 
@@ -267,8 +257,8 @@ function generatePDF(data,sigImgs){
 
   chkPage();secTitle('Contraindications');
   doc.setFontSize(8.5);doc.setFont('helvetica','normal');
-  const ct=data.contraindications==='None'?'None declared':data.contraindications;
-  const ctL=doc.splitTextToSize(ct,cw);doc.text(ctL,ml,y);y+=ctL.length*5+2;
+  const ctL=doc.splitTextToSize(data.contraindications==='None'?'None declared':data.contraindications,cw);
+  doc.text(ctL,ml,y);y+=ctL.length*5+2;
   if(data.extraNotes&&data.extraNotes!=='-'){row('Notes',data.extraNotes);}y+=2;
 
   chkPage();secTitle('Photo & Media Consent');
@@ -280,25 +270,25 @@ function generatePDF(data,sigImgs){
   doc.text(dL,ml,y);y+=dL.length*4.5+4;doc.setTextColor(26,26,26);
 
   chkPage();secTitle('Consent Declarations');
-  const cons=['I have read and understood this form and agree to proceed','I confirm all health information provided is accurate','I agree to follow up as recommended by my physiotherapist'];
-  cons.forEach(t=>{doc.setFontSize(8.5);doc.setTextColor(29,158,117);doc.text('[x]',ml,y);doc.setTextColor(26,26,26);doc.text(t,ml+8,y);y+=5.5;});y+=4;
+  ['I have read and understood this form and agree to proceed','I confirm all health information provided is accurate','I agree to follow up as recommended by my physiotherapist'].forEach(t=>{
+    doc.setFontSize(8.5);doc.setTextColor(29,158,117);doc.text('[x]',ml,y);doc.setTextColor(26,26,26);doc.text(t,ml+8,y);y+=5.5;
+  });y+=4;
 
   chkPage();secTitle('Signatures');
-  const sLabels=['Patient','Physiotherapist','Witness 1','Witness 2'];
-  const sDates=[data.date0,data.date1,data.date2,data.date3];
-  const sHas=[data.patientSig==='Signed',data.physioSig==='Signed',data.witness1Sig==='Signed',data.witness2Sig==='Signed'];
-  for(let i=0;i<4;i++){
+  ['Patient','Physiotherapist','Witness 1','Witness 2'].forEach((label,i)=>{
     chkPage();
-    doc.setFontSize(8.5);doc.setFont('helvetica','bold');doc.text(sLabels[i]+':',ml,y);
-    doc.setFont('helvetica','normal');doc.text('Date: '+(sDates[i]||'___________'),ml+120,y);y+=3;
+    const dates=[data.date0,data.date1,data.date2,data.date3];
+    const hasS=[data.patientSig==='Signed',data.physioSig==='Signed',data.witness1Sig==='Signed',data.witness2Sig==='Signed'];
+    doc.setFontSize(8.5);doc.setFont('helvetica','bold');doc.text(label+':',ml,y);
+    doc.setFont('helvetica','normal');doc.text('Date: '+(dates[i]||'___________'),ml+120,y);y+=3;
     doc.setDrawColor(200,200,200);doc.rect(ml,y,cw*0.65,22);
-    if(sHas[i]&&sigImgs[i]){try{doc.addImage(sigImgs[i],'PNG',ml+1,y+1,cw*0.65-2,20);}catch(e){}}
+    if(hasS[i]&&sigImgs[i]){try{doc.addImage(sigImgs[i],'PNG',ml+1,y+1,cw*0.65-2,20);}catch(e){}}
     else{doc.setFontSize(8);doc.setTextColor(180,180,180);doc.text('Not signed',ml+4,y+12);doc.setTextColor(26,26,26);}
     y+=26;
-  }
+  });
+
   doc.setFontSize(7.5);doc.setTextColor(150,150,150);
   doc.text('Generated: '+new Date().toLocaleString('en-GB',{timeZone:'Asia/Bangkok'})+'  |  Stay Well Clinic & Physio',W/2,290,{align:'center'});
-
   const safeName=(data.patientName||'Patient').replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'');
   doc.save(safeName+'_'+(data.visitDate||new Date().toISOString().split('T')[0])+'_NormaTec.pdf');
 }
@@ -336,16 +326,10 @@ async function submitForm(){
   document.getElementById('saving-page').style.display='block';
 
   try{generatePDF(payload,sigImgs);}catch(e){console.error('PDF:',e);}
+  await sendToSheet(payload);
 
-  try{
-    await sendToSheet(payload);
-    document.getElementById('saving-page').style.display='none';
-    document.getElementById('success-page').style.display='block';
-  }catch(err){
-    document.getElementById('saving-page').style.display='none';
-    document.getElementById('form-page').style.display='block';
-    document.getElementById('errMsg').style.display='block';
-  }
+  document.getElementById('saving-page').style.display='none';
+  document.getElementById('success-page').style.display='block';
 }
 
 function resetForm(){
