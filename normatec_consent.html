@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="NormaTec Consent">
+<title>NormaTec® Consent — Stay Well Clinic</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a1a;min-height:100vh}
+.page{max-width:720px;margin:0 auto;padding:24px 20px 60px}
+.clinic-header{background:#fff;border-radius:12px;padding:20px;text-align:center;margin-bottom:20px;border:0.5px solid #e0e0d8}
+.clinic-name{font-size:15px;font-weight:600;color:#1a1a1a}
+.clinic-sub{font-size:12px;color:#888;margin-top:4px;line-height:1.6}
+h1{font-size:20px;font-weight:600;text-align:center;margin-bottom:4px;color:#1a1a1a}
+.form-subtitle{font-size:13px;color:#888;text-align:center;margin-bottom:24px}
+.card{background:#fff;border-radius:12px;border:0.5px solid #e0e0d8;padding:20px;margin-bottom:16px}
+.sec-label{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#aaa;margin-bottom:14px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px}
+.row1{margin-bottom:12px}
+.field label{display:block;font-size:12px;color:#888;margin-bottom:4px;font-weight:500}
+.field input,.field select{width:100%;font-size:15px;color:#1a1a1a;background:#fafaf8;border:0.5px solid #ddd;border-radius:8px;padding:10px 12px;outline:none;-webkit-appearance:none;appearance:none}
+.field input:focus,.field select:focus{border-color:#1D9E75;background:#fff}
+.info-box{background:#f8f8f5;border:0.5px solid #e8e8e0;border-radius:8px;padding:14px;font-size:13px;color:#666;line-height:1.7}
+.check-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.chk{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#1a1a1a;line-height:1.45;cursor:pointer;padding:8px;border-radius:8px;border:0.5px solid #eee;background:#fafaf8}
+.chk input[type=checkbox]{width:18px;height:18px;flex-shrink:0;margin-top:1px;accent-color:#1D9E75;cursor:pointer}
+.chk-full{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#1a1a1a;line-height:1.45;cursor:pointer;padding:10px;border-radius:8px;border:0.5px solid #eee;background:#fafaf8;margin-bottom:8px}
+.chk-full input[type=checkbox]{width:18px;height:18px;flex-shrink:0;margin-top:1px;accent-color:#1D9E75;cursor:pointer}
+.photo-item{margin-bottom:14px}
+.photo-label{font-size:14px;color:#1a1a1a;margin-bottom:8px;font-weight:500}
+.radio-row{display:flex;gap:12px}
+.radio-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px;border-radius:8px;border:0.5px solid #ddd;background:#fafaf8;font-size:14px;cursor:pointer;transition:all .15s}
+.radio-btn input{accent-color:#1D9E75;width:16px;height:16px}
+.radio-btn.selected{border-color:#1D9E75;background:#f0faf6;color:#1D9E75;font-weight:500}
+.sig-wrap{margin-bottom:16px}
+.sig-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.sig-title{font-size:13px;color:#555;font-weight:500}
+.clr-btn{font-size:12px;color:#aaa;background:none;border:0.5px solid #ddd;border-radius:6px;padding:4px 12px;cursor:pointer}
+canvas.sig{display:block;width:100%;height:110px;border:0.5px solid #ddd;border-radius:8px;background:#fff;cursor:crosshair;touch-action:none}
+.sig-hint{font-size:11px;color:#bbb;text-align:center;margin-top:4px}
+.submit-btn{width:100%;padding:16px;font-size:16px;font-weight:600;background:#1D9E75;color:#fff;border:none;border-radius:12px;cursor:pointer;margin-top:8px;-webkit-appearance:none}
+.submit-btn:active{opacity:.85}
+.saving{display:none;text-align:center;padding:60px 20px}
+.saving p{font-size:14px;color:#888;margin-top:12px}
+.success{display:none;text-align:center;padding:60px 20px}
+.success h2{font-size:22px;font-weight:600;margin-bottom:8px}
+.success p{font-size:14px;color:#888;line-height:1.7}
+.new-btn{margin-top:24px;display:inline-block;padding:12px 28px;background:#1D9E75;color:#fff;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;border:none}
+.err-msg{display:none;font-size:13px;color:#E24B4A;text-align:center;margin-top:10px;padding:10px;background:#fff5f5;border-radius:8px;border:0.5px solid #fcc}
+@media(max-width:480px){.row2,.row3,.check-grid{grid-template-columns:1fr}.page{padding:16px 14px 60px}}
+</style>
+</head>
+<body>
+<div class="page" id="form-page">
+  <div class="clinic-header">
+    <div class="clinic-name">สเตย์ เวล สหคลินิกเวชกรรม และ กายภาพบำบัด</div>
+    <div class="clinic-sub">56/80 หมู่4 ต.ราไวย์ อ.เมือง จ.ภูเก็ต 83130<br>+66 (09)3580 6836 · info@staywellphuket.com</div>
+  </div>
+  <h1>NormaTec® Leg Compression</h1>
+  <p class="form-subtitle">Consent & Waiver Form</p>
+
+  <div class="card">
+    <div class="sec-label">Patient information</div>
+    <div class="row2">
+      <div class="field"><label>Full name *</label><input type="text" id="pname" placeholder="First and last name"></div>
+      <div class="field"><label>Date of birth</label><input type="date" id="dob"></div>
+    </div>
+    <div class="row3">
+      <div class="field"><label>Age</label><input type="number" id="age" placeholder="yrs" min="1" max="120" inputmode="numeric"></div>
+      <div class="field"><label>Sex</label><select id="sex"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></div>
+      <div class="field"><label>CN / HN</label><input type="text" id="cn" placeholder="Chart no."></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Visit date</label><input type="date" id="visit"></div>
+      <div class="field"><label>Phone</label><input type="tel" id="phone" placeholder="+66 ..."></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="sec-label">About this therapy</div>
+    <div class="info-box">NormaTec® Compression Therapy improves blood circulation in the lower legs, ankles, and feet through vasopneumatic compression. Effective for pain and swelling related to chronic venous insufficiency and varicose veins. Sessions last approximately 30–45 minutes. You may stop at any time.</div>
+  </div>
+
+  <div class="card">
+    <div class="sec-label">Contraindications — tick all that apply</div>
+    <p style="font-size:13px;color:#888;margin-bottom:12px;line-height:1.5">Not recommended if you have any of the following:</p>
+    <div class="check-grid">
+      <label class="chk"><input type="checkbox" class="contra"> Current or unstable fractures</label>
+      <label class="chk"><input type="checkbox" class="contra"> Recent surgery with stitches</label>
+      <label class="chk"><input type="checkbox" class="contra"> Open wounds or abrasions</label>
+      <label class="chk"><input type="checkbox" class="contra"> Suspected or known acute DVT</label>
+      <label class="chk"><input type="checkbox" class="contra"> Severe atherosclerosis / IVD</label>
+      <label class="chk"><input type="checkbox" class="contra"> Severe cardiac failure (CHF)</label>
+      <label class="chk"><input type="checkbox" class="contra"> Existing pulmonary edema</label>
+      <label class="chk"><input type="checkbox" class="contra"> Existing pulmonary embolism</label>
+      <label class="chk"><input type="checkbox" class="contra"> Extreme limb deformity</label>
+      <label class="chk"><input type="checkbox" class="contra"> Gangrene / dermatitis / skin graft</label>
+      <label class="chk"><input type="checkbox" class="contra"> Known malignancy in legs/arms</label>
+      <label class="chk"><input type="checkbox" class="contra"> Untreated infections / cellulitis</label>
+      <label class="chk"><input type="checkbox" class="contra"> Lymphangiosarcoma</label>
+      <label class="chk"><input type="checkbox" class="contra"> Pregnancy (current/suspected)</label>
+    </div>
+    <div class="row1" style="margin-top:12px">
+      <div class="field"><label>Additional notes</label><input type="text" id="extra" placeholder="Describe if any"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="sec-label">Photo & media consent</div>
+    <div class="photo-item">
+      <div class="photo-label">For medical file record only</div>
+      <div class="radio-row">
+        <label class="radio-btn" id="p1yes"><input type="radio" name="photo1" value="Yes" onchange="updateRadio('p1yes','p1no')"> Yes</label>
+        <label class="radio-btn" id="p1no"><input type="radio" name="photo1" value="No" onchange="updateRadio('p1no','p1yes')"> No</label>
+      </div>
+    </div>
+    <div class="photo-item">
+      <div class="photo-label">For social media and website</div>
+      <div class="radio-row">
+        <label class="radio-btn" id="p2yes"><input type="radio" name="photo2" value="Yes" onchange="updateRadio('p2yes','p2no')"> Yes</label>
+        <label class="radio-btn" id="p2no"><input type="radio" name="photo2" value="No" onchange="updateRadio('p2no','p2yes')"> No</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="sec-label">Disclaimer</div>
+    <div class="info-box" style="font-size:12.5px">"I hereby understand that STAY Well-being & Lifestyle Resort and Resort Life Co., Ltd are not affiliated with STAY WELL Clinic & Physio and cannot be held responsible for any damage, loss, injuries or other matters which may happen with STAY WELL Clinic & Physio."</div>
+  </div>
+
+  <div class="card">
+    <div class="sec-label">Informed consent</div>
+    <div class="info-box" style="font-size:12.5px;margin-bottom:14px">By signing below, you grant authority to Stay Well Clinic & Physio to perform NormaTec® Leg Compression Therapy. The nature, purpose, possible alternatives, and potential complications have been fully explained. No guarantee has been given as to results.</div>
+    <label class="chk-full"><input type="checkbox" id="c1"> I have read and understood this form and agree to proceed</label>
+    <label class="chk-full"><input type="checkbox" id="c2"> I confirm all health information provided is accurate and complete</label>
+    <label class="chk-full"><input type="checkbox" id="c3"> I agree to follow up as recommended by my physiotherapist</label>
+  </div>
+
+  <div class="card">
+    <div class="sec-label">Signatures</div>
+    <div class="sig-wrap">
+      <div class="sig-top"><span class="sig-title">Patient signature <span style="color:#bbb;font-weight:400">— required</span></span><button class="clr-btn" onclick="clearSig(0)">↺ Clear</button></div>
+      <canvas class="sig" id="sig0"></canvas>
+      <div class="sig-hint" id="hint0">Sign with finger</div>
+      <div class="field row1" style="margin-top:8px"><label>Date</label><input type="date" id="date0"></div>
+    </div>
+    <div class="sig-wrap">
+      <div class="sig-top"><span class="sig-title">Physiotherapist signature</span><button class="clr-btn" onclick="clearSig(1)">↺ Clear</button></div>
+      <canvas class="sig" id="sig1"></canvas>
+      <div class="sig-hint" id="hint1">Sign with finger</div>
+      <div class="field row1" style="margin-top:8px"><label>Date</label><input type="date" id="date1"></div>
+    </div>
+    <div class="sig-wrap">
+      <div class="sig-top"><span class="sig-title">Witness 1 signature</span><button class="clr-btn" onclick="clearSig(2)">↺ Clear</button></div>
+      <canvas class="sig" id="sig2"></canvas>
+      <div class="sig-hint" id="hint2">Sign with finger</div>
+      <div class="field row1" style="margin-top:8px"><label>Date</label><input type="date" id="date2"></div>
+    </div>
+    <div class="sig-wrap">
+      <div class="sig-top"><span class="sig-title">Witness 2 signature</span><button class="clr-btn" onclick="clearSig(3)">↺ Clear</button></div>
+      <canvas class="sig" id="sig3"></canvas>
+      <div class="sig-hint" id="hint3">Sign with finger</div>
+      <div class="field row1" style="margin-top:8px"><label>Date</label><input type="date" id="date3"></div>
+    </div>
+  </div>
+
+  <button class="submit-btn" onclick="submitForm()">Submit & Save PDF</button>
+  <div class="err-msg" id="errMsg">⚠️ Could not save to Google Sheets. PDF was downloaded. Check internet and try again.</div>
+</div>
+
+<div class="saving" id="saving-page">
+  <div style="font-size:40px">⏳</div>
+  <p>Saving to Google Sheets<br>and generating PDF…</p>
+</div>
+
+<div class="success" id="success-page">
+  <div style="font-size:56px;margin-bottom:16px">✅</div>
+  <h2>Consent submitted</h2>
+  <p>Saved to Google Sheets.<br>PDF downloaded to your device.<br><br><span style="font-size:12px;color:#aaa">Questions? info@staywellphuket.com</span></p>
+  <button class="new-btn" onclick="resetForm()">New patient →</button>
+</div>
+
+<script>
+const SHEET_URL='https://script.google.com/macros/s/AKfycby2WPP64rJDrG_rY6WsdDR674TeaKWPq07xKTvpeHS_QtW4M1gtJXXY16jMS-zTqxLtag/exec';
+const sigs=[0,1,2,3].map(i=>({idx:i,drawing:false,hasSig:false,ctx:null}));
+
+function initSig(s){
+  const c=document.getElementById('sig'+s.idx);
+  const dpr=window.devicePixelRatio||1;
+  const r=c.getBoundingClientRect();
+  c.width=r.width*dpr;c.height=r.height*dpr;
+  s.ctx=c.getContext('2d');
+  s.ctx.scale(dpr,dpr);
+  s.ctx.strokeStyle='#1a1a1a';s.ctx.lineWidth=2;s.ctx.lineCap='round';s.ctx.lineJoin='round';
+  function pt(e){const rc=c.getBoundingClientRect();if(e.touches)return{x:e.touches[0].clientX-rc.left,y:e.touches[0].clientY-rc.top};return{x:e.clientX-rc.left,y:e.clientY-rc.top};}
+  c.addEventListener('mousedown',e=>{s.drawing=true;const p=pt(e);s.ctx.beginPath();s.ctx.moveTo(p.x,p.y);});
+  c.addEventListener('mousemove',e=>{if(!s.drawing)return;const p=pt(e);s.ctx.lineTo(p.x,p.y);s.ctx.stroke();markSigned(s);});
+  c.addEventListener('mouseup',()=>s.drawing=false);
+  c.addEventListener('mouseleave',()=>s.drawing=false);
+  c.addEventListener('touchstart',e=>{e.preventDefault();s.drawing=true;const p=pt(e);s.ctx.beginPath();s.ctx.moveTo(p.x,p.y);},{passive:false});
+  c.addEventListener('touchmove',e=>{e.preventDefault();if(!s.drawing)return;const p=pt(e);s.ctx.lineTo(p.x,p.y);s.ctx.stroke();markSigned(s);},{passive:false});
+  c.addEventListener('touchend',()=>s.drawing=false);
+}
+
+function markSigned(s){s.hasSig=true;const h=document.getElementById('hint'+s.idx);if(h)h.style.display='none';}
+function clearSig(idx){const s=sigs[idx];const c=document.getElementById('sig'+idx);s.ctx.clearRect(0,0,c.width,c.height);s.hasSig=false;const h=document.getElementById('hint'+idx);if(h)h.style.display='block';}
+function updateRadio(a,b){document.getElementById(a).classList.add('selected');document.getElementById(b).classList.remove('selected');}
+
+window.addEventListener('load',()=>{
+  sigs.forEach(initSig);
+  const today=new Date().toISOString().split('T')[0];
+  document.getElementById('visit').value=today;
+  document.getElementById('date0').value=today;
+});
+
+function sendToSheet(payload){
+  return new Promise((resolve)=>{
+    const form=document.createElement('form');
+    form.method='POST';
+    form.action=SHEET_URL;
+    form.target='hidden-iframe';
+    form.style.display='none';
+    const inp=document.createElement('input');
+    inp.type='hidden';
+    inp.name='data';
+    inp.value=JSON.stringify(payload);
+    form.appendChild(inp);
+    document.body.appendChild(form);
+    const iframe=document.createElement('iframe');
+    iframe.name='hidden-iframe';
+    iframe.style.display='none';
+    document.body.appendChild(iframe);
+    iframe.onload=()=>{resolve(true);};
+    setTimeout(()=>resolve(true),5000);
+    form.submit();
+  });
+}
+
+function generatePDF(data,sigImgs){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'mm',format:'a4'});
+  const W=210,ml=18,cw=W-36;
+  let y=18;
+  doc.setFillColor(29,158,117);
+  doc.rect(0,0,W,28,'F');
+  doc.setTextColor(255,255,255);
+  doc.setFontSize(13);doc.setFont('helvetica','bold');
+  doc.text('NormaTec\u00AE Leg Compression Therapy',W/2,11,{align:'center'});
+  doc.setFontSize(9);doc.setFont('helvetica','normal');
+  doc.text('Consent & Waiver Form',W/2,17,{align:'center'});
+  doc.setFontSize(8);
+  doc.text('Stay Well Clinic & Physio  |  56/80 Mu4, Rawai, Phuket  |  info@staywellphuket.com',W/2,23,{align:'center'});
+  y=36;doc.setTextColor(26,26,26);
+
+  function secTitle(t){doc.setFillColor(245,245,240);doc.rect(ml,y-4,cw,7,'F');doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(100,100,100);doc.text(t.toUpperCase(),ml+2,y+0.5);doc.setTextColor(26,26,26);y+=8;}
+  function row(l,v){doc.setFontSize(8.5);doc.setFont('helvetica','bold');doc.text(l+':',ml,y);doc.setFont('helvetica','normal');doc.text(v||'-',ml+42,y);y+=6;}
+  function chkPage(){if(y>265){doc.addPage();y=20;}}
+
+  secTitle('Patient Information');
+  row('Full name',data.patientName);row('Date of birth',data.dob);
+  row('Age / Sex',(data.age||'-')+' yrs  |  '+(data.sex||'-'));
+  row('CN / HN',data.cn);row('Visit date',data.visitDate);row('Phone',data.phone);y+=2;
+
+  chkPage();secTitle('Contraindications');
+  doc.setFontSize(8.5);doc.setFont('helvetica','normal');
+  const ct=data.contraindications==='None'?'None declared':data.contraindications;
+  const ctL=doc.splitTextToSize(ct,cw);doc.text(ctL,ml,y);y+=ctL.length*5+2;
+  if(data.extraNotes&&data.extraNotes!=='-'){row('Notes',data.extraNotes);}y+=2;
+
+  chkPage();secTitle('Photo & Media Consent');
+  row('Medical file',data.photoMedical);row('Social media',data.photoSocial);y+=2;
+
+  chkPage();secTitle('Disclaimer');
+  doc.setFontSize(8);doc.setFont('helvetica','italic');doc.setTextColor(100,100,100);
+  const dL=doc.splitTextToSize('"I hereby understand that STAY Well-being & Lifestyle Resort and Resort Life Co., Ltd are not affiliated with STAY WELL Clinic & Physio and cannot be held responsible for any damage, loss, injuries or other matters which may happen with STAY WELL Clinic & Physio."',cw);
+  doc.text(dL,ml,y);y+=dL.length*4.5+4;doc.setTextColor(26,26,26);
+
+  chkPage();secTitle('Consent Declarations');
+  const cons=['I have read and understood this form and agree to proceed','I confirm all health information provided is accurate','I agree to follow up as recommended by my physiotherapist'];
+  cons.forEach(t=>{doc.setFontSize(8.5);doc.setTextColor(29,158,117);doc.text('[x]',ml,y);doc.setTextColor(26,26,26);doc.text(t,ml+8,y);y+=5.5;});y+=4;
+
+  chkPage();secTitle('Signatures');
+  const sLabels=['Patient','Physiotherapist','Witness 1','Witness 2'];
+  const sDates=[data.date0,data.date1,data.date2,data.date3];
+  const sHas=[data.patientSig==='Signed',data.physioSig==='Signed',data.witness1Sig==='Signed',data.witness2Sig==='Signed'];
+  for(let i=0;i<4;i++){
+    chkPage();
+    doc.setFontSize(8.5);doc.setFont('helvetica','bold');doc.text(sLabels[i]+':',ml,y);
+    doc.setFont('helvetica','normal');doc.text('Date: '+(sDates[i]||'___________'),ml+120,y);y+=3;
+    doc.setDrawColor(200,200,200);doc.rect(ml,y,cw*0.65,22);
+    if(sHas[i]&&sigImgs[i]){try{doc.addImage(sigImgs[i],'PNG',ml+1,y+1,cw*0.65-2,20);}catch(e){}}
+    else{doc.setFontSize(8);doc.setTextColor(180,180,180);doc.text('Not signed',ml+4,y+12);doc.setTextColor(26,26,26);}
+    y+=26;
+  }
+  doc.setFontSize(7.5);doc.setTextColor(150,150,150);
+  doc.text('Generated: '+new Date().toLocaleString('en-GB',{timeZone:'Asia/Bangkok'})+'  |  Stay Well Clinic & Physio',W/2,290,{align:'center'});
+
+  const safeName=(data.patientName||'Patient').replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'');
+  doc.save(safeName+'_'+(data.visitDate||new Date().toISOString().split('T')[0])+'_NormaTec.pdf');
+}
+
+async function submitForm(){
+  const name=document.getElementById('pname').value.trim();
+  if(!name){alert('Please enter patient name.');return;}
+  if(!document.getElementById('c1').checked||!document.getElementById('c2').checked||!document.getElementById('c3').checked){alert('Please check all three consent boxes.');return;}
+  if(!sigs[0].hasSig){alert('Patient signature is required.');return;}
+
+  const contras=[];
+  document.querySelectorAll('.contra:checked').forEach(cb=>contras.push(cb.parentElement.textContent.trim()));
+  const p1=document.querySelector('input[name="photo1"]:checked');
+  const p2=document.querySelector('input[name="photo2"]:checked');
+
+  const payload={
+    patientName:name,dob:document.getElementById('dob').value,
+    age:document.getElementById('age').value,sex:document.getElementById('sex').value,
+    cn:document.getElementById('cn').value,visitDate:document.getElementById('visit').value,
+    phone:document.getElementById('phone').value,
+    contraindications:contras.length?contras.join('; '):'None',
+    extraNotes:document.getElementById('extra').value||'-',
+    photoMedical:p1?p1.value:'Not answered',photoSocial:p2?p2.value:'Not answered',
+    patientSig:sigs[0].hasSig?'Signed':'Not signed',
+    physioSig:sigs[1].hasSig?'Signed':'-',
+    witness1Sig:sigs[2].hasSig?'Signed':'-',
+    witness2Sig:sigs[3].hasSig?'Signed':'-',
+    date0:document.getElementById('date0').value,date1:document.getElementById('date1').value,
+    date2:document.getElementById('date2').value,date3:document.getElementById('date3').value,
+  };
+
+  const sigImgs=sigs.map(s=>{if(!s.hasSig)return null;try{return document.getElementById('sig'+s.idx).toDataURL('image/png');}catch(e){return null;}});
+
+  document.getElementById('form-page').style.display='none';
+  document.getElementById('saving-page').style.display='block';
+
+  try{generatePDF(payload,sigImgs);}catch(e){console.error('PDF:',e);}
+
+  try{
+    await sendToSheet(payload);
+    document.getElementById('saving-page').style.display='none';
+    document.getElementById('success-page').style.display='block';
+  }catch(err){
+    document.getElementById('saving-page').style.display='none';
+    document.getElementById('form-page').style.display='block';
+    document.getElementById('errMsg').style.display='block';
+  }
+}
+
+function resetForm(){
+  document.getElementById('success-page').style.display='none';
+  document.getElementById('form-page').style.display='block';
+  document.querySelectorAll('input[type=text],input[type=date],input[type=number],input[type=tel]').forEach(el=>el.value='');
+  document.querySelectorAll('select').forEach(el=>el.selectedIndex=0);
+  document.querySelectorAll('input[type=checkbox],input[type=radio]').forEach(el=>el.checked=false);
+  document.querySelectorAll('.radio-btn').forEach(el=>el.classList.remove('selected'));
+  sigs.forEach(s=>clearSig(s.idx));
+  const today=new Date().toISOString().split('T')[0];
+  document.getElementById('visit').value=today;document.getElementById('date0').value=today;
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
